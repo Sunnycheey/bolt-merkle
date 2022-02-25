@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package bbolt;
+
+option go_package="service/proto";
+
+message RequestKey {
+  bytes key = 1;
+  bytes bucketName = 2;
+}
+
+message RequestKeys {
+  repeated bytes keys = 2;
+  bytes bucketName = 1;
+}
+
+message RangeKey {
+  bytes start = 1;
+  bytes end = 2;
+}
+
+message ArrayRangeKey {
+  bytes bucketName = 1;
+  repeated RangeKey rangeKey = 2;
+}
+
+message ReturnVal {
+  Status s = 1;
+  bytes val = 2;
+}
+
+message ReturnVals {
+  Status s = 1;
+  repeated bytes val = 2;
+}
+
+message ReturnKVs {
+  Status s = 1;
+  repeated KV kvs = 2;
+}
+
+message RootHash {
+  Status s = 1;
+  bytes rh = 2;
+}
+
+message KV {
+  bytes key = 1;
+  bytes val = 2;
+}
+
+message Status {
+  uint32 code = 1;
+  string msg = 2;
+}
+
+message KVs {
+  repeated KV kvs = 1;
+}
+
+message RequestKV {
+  KV kv = 1;
+  bytes bucketName = 2;
+}
+
+message RequestKVs {
+  KVs kvs = 1;
+  bytes bucketName = 2;
+}
+
+message InitParam {
+  string path = 1;
+  // unused currently
+  bytes bucketName = 2;
+  string fileMode = 3;
+  string options = 4;
+}
+
+message Bucket {
+  bytes bucketName = 1;
+}
+
+message Empty {}
+
+
+
+service StorageService {
+  rpc Set (RequestKV) returns (Status) {}
+  rpc SetBatch (RequestKVs) returns (Status) {}
+  rpc Get (RequestKey) returns (ReturnVal) {}
+  rpc GetBatch (RequestKeys) returns (ReturnVals) {}
+  rpc InitDatabase (InitParam) returns (Status) {}
+  rpc GetRootHash (Bucket) returns (RootHash) {}
+  rpc CloseDB (Empty) returns (Status) {}
+  rpc Del (RequestKey) returns (Status) {}
+  rpc DelBatch(RequestKeys) returns (Status) {}
+  rpc RangeQuery (ArrayRangeKey) returns (ReturnKVs) {}
+}

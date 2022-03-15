@@ -3,35 +3,40 @@ package rpc
 import (
 	"bytes"
 	"context"
-	"fmt"
 	bolt "go.etcd.io/bbolt"
 	pb "go.etcd.io/bbolt/rpc/service/proto"
+	"google.golang.org/protobuf/proto"
+	"log"
+	"os"
 )
 
 type Server struct {
-	db *bolt.DB
-	readTx *bolt.Tx
+	db         *bolt.DB
+	readTx     *bolt.Tx
 	bucketName string
-	path string
+	path       string
 }
 
 var db *bolt.DB
-
 
 func (s *Server) mustEmbedUnimplementedStorageServiceServer() {
 	panic("implement me")
 }
 
-func (s *Server) Set (ctx context.Context, requestKv *pb.RequestKV) (*pb.Status, error) {
-	//s.db, _ = bolt.Open(s.path, 0600, nil)
+func (s *Server) Set(ctx context.Context, requestKv *pb.RequestKV) (*pb.Status, error) {
 	writeTx, err := db.Begin(true)
 	kv := requestKv.GetKv()
 	if err != nil {
 		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
 	}
 	//b, _ := writeTx.CreateBucketIfNotExists([]byte("test"))
+	log.Printf("Handle <Set>, key: %s, value: %s", kv.GetKey(), kv.GetVal().String())
 	b, _ := writeTx.CreateBucketIfNotExists(requestKv.GetBucketName())
-	err = b.Put(kv.GetKey(), kv.GetVal())
+	v, err := proto.Marshal(kv.GetVal())
+	if err != nil {
+		panic("Error at marshal")
+	}
+	err = b.Put(kv.GetKey(), v)
 	if err != nil {
 		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
 	}
@@ -42,16 +47,21 @@ func (s *Server) Set (ctx context.Context, requestKv *pb.RequestKV) (*pb.Status,
 	return &pb.Status{Code: 0, Msg: "Success"}, nil
 }
 
-func (s *Server) SetBatch (ctx context.Context, requestKVs *pb.RequestKVs) (*pb.Status, error) {
+func (s *Server) SetBatch(ctx context.Context, requestKVs *pb.RequestKVs) (*pb.Status, error) {
 	//s.db, _ = bolt.Open(s.path, 0600, nil)
 	writeTx, err := db.Begin(true)
 	kvs := requestKVs.GetKvs()
+	//log.Printf("Handle <SetBatch>, key value sequences: %s", kvs.GetKvs())
 	if err != nil {
 		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
 	}
 	b, _ := writeTx.CreateBucketIfNotExists(requestKVs.GetBucketName())
 	for _, kv := range kvs.GetKvs() {
-		err := b.Put(kv.GetKey(), kv.GetVal())
+		v, err := proto.Marshal(kv.GetVal())
+		if err != nil {
+			panic("Error at marshal!")
+		}
+		err = b.Put(kv.GetKey(), v)
 		if err != nil {
 			return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
 		}
@@ -63,10 +73,16 @@ func (s *Server) SetBatch (ctx context.Context, requestKVs *pb.RequestKVs) (*pb.
 func (s *Server) Get(ctx context.Context, k *pb.RequestKey) (*pb.ReturnVal, error) {
 	readTx, _ := db.Begin(false)
 	b := readTx.Bucket(k.GetBucketName())
+	log.Printf("Handle <Get>, key: %s", k.GetKey())
 	if b != nil {
 		defer readTx.Rollback()
 		v := b.Get(k.GetKey())
-		return &pb.ReturnVal{Val: v, S: &pb.Status{Code: 0, Msg: "Success"}}, nil
+		vval := &pb.VValue{}
+		err := proto.Unmarshal(v, vval)
+		if err != nil {
+			panic("Unmarshal failed!")
+		}
+		return &pb.ReturnVal{Val: vval, S: &pb.Status{Code: 0, Msg: "Success"}}, nil
 	}
 	return &pb.ReturnVal{Val: nil, S: &pb.Status{Code: 30000, Msg: "Bucket Not Exists"}}, nil
 }
@@ -76,11 +92,17 @@ func (s *Server) GetBatch(ctx context.Context, ks *pb.RequestKeys) (*pb.ReturnVa
 	readTx, _ := db.Begin(false)
 	defer readTx.Rollback()
 	b := readTx.Bucket(ks.GetBucketName())
+	//log.Printf("Handle <GetBatch>, key sequence: %s", ks.GetKeys())
 	if b != nil {
-		vals := make([][]byte, 0)
+		vals := make([]*pb.VValue, 0)
 		for _, k := range ks.GetKeys() {
 			v := b.Get(k)
-			vals = append(vals, v)
+			vval := &pb.VValue{}
+			err := proto.Unmarshal(v, vval)
+			if err != nil {
+				panic("Unmarshal failed!")
+			}
+			vals = append(vals, vval)
 		}
 		status := &pb.Status{Code: 0, Msg: "Success"}
 		return &pb.ReturnVals{Val: vals, S: status}, nil
@@ -88,29 +110,32 @@ func (s *Server) GetBatch(ctx context.Context, ks *pb.RequestKeys) (*pb.ReturnVa
 	return &pb.ReturnVals{Val: nil, S: &pb.Status{Code: 30000, Msg: "Bucket Not Exists"}}, nil
 }
 
+func FileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
 func (s *Server) InitDatabase(ctx context.Context, para *pb.InitParam) (*pb.Status, error) {
+	log.SetOutput(os.Stdout)
+	log.Printf("Handle <init>, database path: %s", para.GetPath())
+	exists, err := FileExists(para.GetPath())
+	if err != nil {
+		panic(err)
+	}
+	if exists && para.GetDeleteIfExists() {
+		os.Remove(para.GetPath())
+	}
 	d, err := bolt.Open(para.GetPath(), 0600, nil)
 	db = d
-	bucketName := para.GetBucketName()
 	if err != nil {
 		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
 	}
-	writeTx, err := db.Begin(true)
-	if err != nil {
-		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
-	}
-	// create bucket
-	_, err = writeTx.CreateBucketIfNotExists(bucketName)
-	//defer s.readTx.Rollback()
-	if err != nil {
-		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
-	}
-	if err != nil {
-		fmt.Println("commit error!")
-		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
-	}
-	writeTx.Commit()
-	//defer s.db.Close()
 	s.path = para.GetPath()
 	return &pb.Status{Code: 0, Msg: "Success"}, nil
 }
@@ -128,6 +153,7 @@ func (s *Server) GetRootHash(ctx context.Context, bucket *pb.Bucket) (*pb.RootHa
 }
 
 func (s *Server) CloseDB(ctx context.Context, empty *pb.Empty) (*pb.Status, error) {
+	log.Printf("Handle <CloseDB>")
 	err := db.Close()
 	if err != nil {
 		return &pb.Status{Code: uint32(1), Msg: err.Error()}, err
@@ -142,6 +168,7 @@ func (s *Server) RangeQuery(ctx context.Context, arrayRangeKey *pb.ArrayRangeKey
 		panic(err)
 	}
 	b := readTx.Bucket(arrayRangeKey.GetBucketName())
+	log.Printf("Handle <RangeQuery>, range sequence: %s", arrayRangeKey.GetRangeKey())
 	if b != nil {
 		c := b.Cursor()
 		kvs := make([]*pb.KV, 0)
@@ -156,14 +183,19 @@ func (s *Server) RangeQuery(ctx context.Context, arrayRangeKey *pb.ArrayRangeKey
 			for _, rv := range arrayRangeKey.GetRangeKey() {
 				e = e + len(rv.GetStart())
 				// k[s:e] < start || k[s:e] > end
-				if bytes.Compare(k[s:e], rv.GetStart()[s:e]) == -1 || bytes.Compare(k[s:e], rv.GetEnd()[s:e]) == 1{
+				if bytes.Compare(k[s:e], rv.GetStart()[s:e]) == -1 || bytes.Compare(k[s:e], rv.GetEnd()[s:e]) == 1 {
 					flag = true
 					break
 				}
 				s = s + len(rv.GetStart())
 			}
 			if !flag {
-				kvs = append(kvs, &pb.KV{Key: k, Val: v})
+				vval := &pb.VValue{}
+				err := proto.Unmarshal(v, vval)
+				if err != nil {
+					panic("Unmarshal failed!")
+				}
+				kvs = append(kvs, &pb.KV{Key: k, Val: vval})
 			}
 		}
 		status := &pb.Status{Code: 0, Msg: "Success"}
@@ -174,6 +206,7 @@ func (s *Server) RangeQuery(ctx context.Context, arrayRangeKey *pb.ArrayRangeKey
 }
 
 func (s *Server) Del(ctx context.Context, key *pb.RequestKey) (*pb.Status, error) {
+	log.Printf("Handle <Del>, key: %s", key.GetKey())
 	writeTx, _ := db.Begin(true)
 	b, _ := writeTx.CreateBucketIfNotExists(key.GetBucketName())
 	b.Delete(key.GetKey())
@@ -182,6 +215,7 @@ func (s *Server) Del(ctx context.Context, key *pb.RequestKey) (*pb.Status, error
 }
 
 func (s *Server) DelBatch(ctx context.Context, keys *pb.RequestKeys) (*pb.Status, error) {
+	log.Printf("Handle <DelBatch>, key sequence: %s", keys.GetKeys())
 	writeTx, _ := db.Begin(true)
 	b, _ := writeTx.CreateBucketIfNotExists(keys.GetBucketName())
 	for _, k := range keys.GetKeys() {

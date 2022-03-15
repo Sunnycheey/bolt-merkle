@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package bbolt;
+package BSSE.protocol;
 
 option go_package="service/proto";
 
@@ -26,12 +26,12 @@ message ArrayRangeKey {
 
 message ReturnVal {
   Status s = 1;
-  bytes val = 2;
+  VValue val = 2;
 }
 
 message ReturnVals {
   Status s = 1;
-  repeated bytes val = 2;
+  repeated VValue val = 2;
 }
 
 message ReturnKVs {
@@ -46,7 +46,7 @@ message RootHash {
 
 message KV {
   bytes key = 1;
-  bytes val = 2;
+  VValue val = 2;
 }
 
 message Status {
@@ -71,9 +71,7 @@ message RequestKVs {
 message InitParam {
   string path = 1;
   // unused currently
-  bytes bucketName = 2;
-  string fileMode = 3;
-  string options = 4;
+  bool delete_if_exists = 2;
 }
 
 message Bucket {
@@ -81,6 +79,16 @@ message Bucket {
 }
 
 message Empty {}
+
+message Version {
+  uint64 block_num = 1;
+  uint64 tx_num = 2;
+}
+
+message VValue {
+  bytes val = 1;
+  Version version = 2;
+}
 
 
 

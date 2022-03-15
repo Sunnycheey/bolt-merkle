@@ -40,7 +40,7 @@ func NewStorageServiceClient(cc grpc.ClientConnInterface) StorageServiceClient {
 
 func (c *storageServiceClient) Set(ctx context.Context, in *RequestKV, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/Set", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *storageServiceClient) Set(ctx context.Context, in *RequestKV, opts ...g
 
 func (c *storageServiceClient) SetBatch(ctx context.Context, in *RequestKVs, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/SetBatch", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/SetBatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *storageServiceClient) SetBatch(ctx context.Context, in *RequestKVs, opt
 
 func (c *storageServiceClient) Get(ctx context.Context, in *RequestKey, opts ...grpc.CallOption) (*ReturnVal, error) {
 	out := new(ReturnVal)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *storageServiceClient) Get(ctx context.Context, in *RequestKey, opts ...
 
 func (c *storageServiceClient) GetBatch(ctx context.Context, in *RequestKeys, opts ...grpc.CallOption) (*ReturnVals, error) {
 	out := new(ReturnVals)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/GetBatch", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/GetBatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *storageServiceClient) GetBatch(ctx context.Context, in *RequestKeys, op
 
 func (c *storageServiceClient) InitDatabase(ctx context.Context, in *InitParam, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/InitDatabase", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/InitDatabase", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (c *storageServiceClient) InitDatabase(ctx context.Context, in *InitParam, 
 
 func (c *storageServiceClient) GetRootHash(ctx context.Context, in *Bucket, opts ...grpc.CallOption) (*RootHash, error) {
 	out := new(RootHash)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/GetRootHash", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/GetRootHash", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *storageServiceClient) GetRootHash(ctx context.Context, in *Bucket, opts
 
 func (c *storageServiceClient) CloseDB(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/CloseDB", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/CloseDB", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (c *storageServiceClient) CloseDB(ctx context.Context, in *Empty, opts ...g
 
 func (c *storageServiceClient) Del(ctx context.Context, in *RequestKey, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/Del", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/Del", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (c *storageServiceClient) Del(ctx context.Context, in *RequestKey, opts ...
 
 func (c *storageServiceClient) DelBatch(ctx context.Context, in *RequestKeys, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/DelBatch", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/DelBatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (c *storageServiceClient) DelBatch(ctx context.Context, in *RequestKeys, op
 
 func (c *storageServiceClient) RangeQuery(ctx context.Context, in *ArrayRangeKey, opts ...grpc.CallOption) (*ReturnKVs, error) {
 	out := new(ReturnKVs)
-	err := c.cc.Invoke(ctx, "/bbolt.StorageService/RangeQuery", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/BSSE.protocol.StorageService/RangeQuery", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func _StorageService_Set_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/Set",
+		FullMethod: "/BSSE.protocol.StorageService/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).Set(ctx, req.(*RequestKV))
@@ -218,7 +218,7 @@ func _StorageService_SetBatch_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/SetBatch",
+		FullMethod: "/BSSE.protocol.StorageService/SetBatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).SetBatch(ctx, req.(*RequestKVs))
@@ -236,7 +236,7 @@ func _StorageService_Get_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/Get",
+		FullMethod: "/BSSE.protocol.StorageService/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).Get(ctx, req.(*RequestKey))
@@ -254,7 +254,7 @@ func _StorageService_GetBatch_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/GetBatch",
+		FullMethod: "/BSSE.protocol.StorageService/GetBatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).GetBatch(ctx, req.(*RequestKeys))
@@ -272,7 +272,7 @@ func _StorageService_InitDatabase_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/InitDatabase",
+		FullMethod: "/BSSE.protocol.StorageService/InitDatabase",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).InitDatabase(ctx, req.(*InitParam))
@@ -290,7 +290,7 @@ func _StorageService_GetRootHash_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/GetRootHash",
+		FullMethod: "/BSSE.protocol.StorageService/GetRootHash",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).GetRootHash(ctx, req.(*Bucket))
@@ -308,7 +308,7 @@ func _StorageService_CloseDB_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/CloseDB",
+		FullMethod: "/BSSE.protocol.StorageService/CloseDB",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).CloseDB(ctx, req.(*Empty))
@@ -326,7 +326,7 @@ func _StorageService_Del_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/Del",
+		FullMethod: "/BSSE.protocol.StorageService/Del",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).Del(ctx, req.(*RequestKey))
@@ -344,7 +344,7 @@ func _StorageService_DelBatch_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/DelBatch",
+		FullMethod: "/BSSE.protocol.StorageService/DelBatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).DelBatch(ctx, req.(*RequestKeys))
@@ -362,7 +362,7 @@ func _StorageService_RangeQuery_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/bbolt.StorageService/RangeQuery",
+		FullMethod: "/BSSE.protocol.StorageService/RangeQuery",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageServiceServer).RangeQuery(ctx, req.(*ArrayRangeKey))
@@ -374,7 +374,7 @@ func _StorageService_RangeQuery_Handler(srv interface{}, ctx context.Context, de
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var StorageService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "bbolt.StorageService",
+	ServiceName: "BSSE.protocol.StorageService",
 	HandlerType: (*StorageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
